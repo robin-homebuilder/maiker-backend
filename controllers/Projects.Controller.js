@@ -12,7 +12,7 @@ exports.getProjectsList = async (req, res) => {
 
 exports.getPastProjectsList = async (req, res) => {
   try {
-    const projects = await Project.find({}).select("-_id title image_base_url main_image other_image").sort({ createdAt: -1 }).limit(4);
+    const projects = await Project.find({}).select("-_id title image_base_url main_image other_image").limit(4);
 
     res.status(200).json(projects);
   } catch (err) {
