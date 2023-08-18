@@ -11,6 +11,7 @@ const projectRoutes = require("./routes/Projects.Route");
 const packageRoutes = require("./routes/Package.Route");
 const stripeRoutes = require("./routes/Stripe.Route");
 const zohoRoutes = require("./routes/Zoho.Route");
+const clientRoutes = require("./routes/Client.Route");
 
 app.use(express.json());
 
@@ -23,6 +24,7 @@ app.use("/project", projectRoutes);
 app.use("/package", packageRoutes);
 app.use("/stripe", stripeRoutes);
 app.use("/zoho", zohoRoutes);
+app.use("/client", clientRoutes);
 /* END ROUTES */
 
 const port = process.env.PORT || 3000;
