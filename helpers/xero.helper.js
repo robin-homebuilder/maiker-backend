@@ -116,9 +116,113 @@ exports.createProject = async (accessToken, contactID, site_address, amount) => 
     });
     
     return response.data;
-
   } catch (err) {
     console.log(err.message)
+    return err;
+  }
+}
+
+exports.createInvoice = async (accessToken, contactID, itemCode, projectDescription, price) => {
+  const now = DateTime.utc();
+
+  const formattedDeadline = now.toISO();
+  
+  const body = {
+    "Type": "ACCREC",
+    "Contact": {
+      "ContactID": contactID
+    },
+    "DueDateString": formattedDeadline,
+    "LineAmountTypes": "Inclusive",
+    "LineItems": [
+      {
+        "ItemCode": itemCode,
+        "Description": projectDescription,
+        "Quantity": "1",
+        "UnitAmount": price,
+        "AccountCode": "500"
+      }
+    ],
+    "Status": "AUTHORISED"
+  }
+  
+  try {
+    const apiURL = 'https://api.xero.com/api.xro/2.0/Invoices';
+    
+    const headers = {
+      'Accept': 'application/json',
+    };
+
+    const response = await axios.post(apiURL, body, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        ...headers
+      }
+    });
+
+    return response.data;
+  } catch (err) {
+    console.log(err.message)
+    return err;
+  }
+}
+
+exports.createPaidInvoice = async (accessToken, invoiceID, price, invoiceNumber) =>{
+  const now = DateTime.utc();
+  const dateOnly = now.toFormat('yyyy-MM-dd');
+
+  const accountID = process.env.PAYMENT_ACCOUNT_ID;
+
+  const body = {
+    "Invoice": {
+      "InvoiceID": invoiceID
+    },
+    "Account": {
+      "AccountID": accountID
+    },
+    "Date": dateOnly,
+    "Amount": price,
+    "Reference": `Payment for Invoice #${invoiceNumber}`
+  }
+  
+  try {
+    const apiURL = 'https://api.xero.com/api.xro/2.0/Payments';
+    
+    const headers = {
+      'Accept': 'application/json',
+    };
+
+    const response = await axios.post(apiURL, body, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        ...headers
+      }
+    });
+    
+    return response.data;
+  } catch (err) {
+    console.log(err.message)
+    return err;
+  }
+}
+
+exports.sendInvoice = async (accessToken, invoiceID) => {
+  try {
+    const apiURL = `https://api.xero.com/api.xro/2.0/Invoices/${invoiceID}/Email`;
+    
+    const headers = {
+      'Accept': 'application/json',
+    };
+
+    const response = await axios.post(apiURL, {}, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        ...headers
+      }
+    });
+
+    return response.data;
+  } catch (err) {
     return err;
   }
 }

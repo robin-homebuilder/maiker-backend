@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const PackageSchema = new mongoose.Schema(
   {
+    item_code: String,
     title: {
       type: String,
       required: true
