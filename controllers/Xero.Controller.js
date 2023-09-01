@@ -3,7 +3,7 @@ const { getXeroAccessToken, createCustomer, createProject, createInvoice, create
 const { Package } = require("../models/Package.Model");
 
 exports.processXero = async (req, res) => {
-  const { site_address, owners, slug } = req.body;
+  const { project_id, owners, slug } = req.body;
   
   const parsedOwner = JSON.parse(owners);
   
@@ -21,7 +21,7 @@ exports.processXero = async (req, res) => {
     const customer = await createCustomer(customerInformation, accessToken);
 
     const contactID = customer.Contacts[0].ContactID;
-    await createProject(accessToken, contactID, site_address, price);
+    await createProject(accessToken, contactID, project_id, price);
 
     const invoiceData = await createInvoice(accessToken, contactID, itemCode, description, price);
 
@@ -140,7 +140,7 @@ exports.testSendInvoice = async (req, res) => {
 
     const send = await sendInvoice(accessToken, invoiceID);
 
-    res.status(200).json({ package: packageData, accessToken: accessToken, send: send});
+    res.status(200).json({ accessToken: accessToken, send: send});
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

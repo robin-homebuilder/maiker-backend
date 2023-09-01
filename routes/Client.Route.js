@@ -8,6 +8,6 @@ const { upload } = require("../helpers/multerUpload.helper");
 
 const router = express.Router();
 
-router.post("/", upload.array('files', 10), createNewClient);
+router.post("/", upload.array('files'), createNewClient);
 
 module.exports = router;

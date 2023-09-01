@@ -88,7 +88,7 @@ exports.createCustomer = async (customerInformation, accessToken) => {
   }
 }
 
-exports.createProject = async (accessToken, contactID, site_address, amount) => {
+exports.createProject = async (accessToken, contactID, project_id, amount) => {
   const now = DateTime.utc();
   const deadline = now.plus({ days: 7 });
 
@@ -96,7 +96,7 @@ exports.createProject = async (accessToken, contactID, site_address, amount) => 
   
   const body = {
     "contactId": contactID,
-    "name": site_address,
+    "name": project_id,
     "deadlineUtc": formattedDeadline,
     "estimateAmount": amount
   }

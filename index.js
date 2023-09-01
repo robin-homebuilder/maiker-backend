@@ -13,6 +13,7 @@ const stripeRoutes = require("./routes/Stripe.Route");
 const zohoRoutes = require("./routes/Zoho.Route");
 const clientRoutes = require("./routes/Client.Route");
 const xeroRoutes = require("./routes/Xero.Route");
+const sharePointRoutes = require("./routes/SharePoint.Route");
 
 app.use(express.json());
 
@@ -27,6 +28,7 @@ app.use("/stripe", stripeRoutes);
 app.use("/zoho", zohoRoutes);
 app.use("/client", clientRoutes);
 app.use("/xero", xeroRoutes);
+app.use("/sharepoint", sharePointRoutes);
 /* END ROUTES */
 
 const port = process.env.PORT || 3000;
