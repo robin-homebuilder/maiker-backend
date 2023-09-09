@@ -109,6 +109,41 @@ exports.uploadFileToSharePoint = async (accessToken, digestValue, file, parentFo
   }
 }
 
+exports.uploadFileToSharePointQuestionnaire = async (accessToken, digestValue, file, parentFolder) => {
+  const sharepointDomain = process.env.SHAREPOINT_DOMAIN;
+  const sharepointSite = process.env.SHAREPOINT_SITE;
+  
+  const fileName = file.originalname;
+  const fileBuffer = file.buffer;
+
+  try {
+    const apiURL = `https://${sharepointDomain}/${sharepointSite}/_api/web/GetFolderByServerRelativeURL('/sites/MaikerConstructionsProjects/Shared Documents/Questionnaire/${parentFolder}')/Files/add(url='${fileName}', overwrite=true)`;
+    let config = {
+      method: 'post',
+      maxBodyLength: Infinity,
+      url: apiURL,
+      headers: { 
+        'Accept': 'application/json;odata=nometadata',
+        'Authorization': `Bearer ${accessToken}`,
+        'X-RequestDigest': digestValue
+      },
+      data: fileBuffer
+    };
+
+    const response = await axios.request(config)
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      return error;
+    });
+
+    return response;
+  } catch (err) {
+    return err;
+  }
+}
+
 exports.createFolder = async (accessToken, digestValue, folderURL) =>{
   const sharepointDomain = process.env.SHAREPOINT_DOMAIN;
   const sharepointSite = process.env.SHAREPOINT_SITE;
