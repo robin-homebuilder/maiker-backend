@@ -216,7 +216,7 @@ exports.createAnonymousLink = async (accessToken, relativePath) => {
       return error;
     });
 
-    return response.data.value;
+    return response;
   } catch (err) {
     return err;
   }

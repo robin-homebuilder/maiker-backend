@@ -50,7 +50,6 @@ exports.processQuestionnaire = async (req, res) => {
         
         const result = await uploadFileToSharePointQuestionnaire(accessToken, formDigestValue, file, folderName);
         
-        console.log(result)
         if(result){
           const url = await createAnonymousLink(accessToken, result.ServerRelativeUrl);
           
