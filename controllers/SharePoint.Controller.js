@@ -1,4 +1,4 @@
-const { getSharePointAccessToken, getFormDigestValue, uploadFileToSharePoint } = require("../helpers/sharePoint.helper");
+const { getSharePointAccessToken, getFormDigestValue, uploadFileToSharePoint } = require("../services/sharePoint.services");
 
 exports.getAccessToken = async (req, res) => {
   try {

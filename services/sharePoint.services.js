@@ -144,7 +144,7 @@ exports.uploadFileToSharePointQuestionnaire = async (accessToken, digestValue, f
   }
 }
 
-exports.createFolder = async (accessToken, digestValue, folderURL) =>{
+exports.createFolder = async (accessToken, digestValue, folderURL) => {
   const sharepointDomain = process.env.SHAREPOINT_DOMAIN;
   const sharepointSite = process.env.SHAREPOINT_SITE;
 
@@ -180,6 +180,43 @@ exports.createFolder = async (accessToken, digestValue, folderURL) =>{
     });
 
     return response;
+  } catch (err) {
+    return err;
+  }
+}
+
+exports.createAnonymousLink = async (accessToken, relativePath) => {
+  const sharepointDomain = process.env.SHAREPOINT_DOMAIN;
+  const sharepointSite = process.env.SHAREPOINT_SITE;
+
+  try {
+    const apiURL = `https://${sharepointDomain}/${sharepointSite}/_api/SP.Web.CreateAnonymousLink`;
+
+    const body = {
+      "url": `https://${sharepointDomain}${relativePath}`
+    }
+
+    let config = {
+      method: 'post',
+      maxBodyLength: Infinity,
+      url: apiURL,
+      headers: { 
+        'Accept': 'application/json;odata=nometadata',
+        'Content-Type': 'application/json;odata=verbose',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      data: body
+    };
+
+    const response = await axios.request(config)
+    .then((response) => {
+      return response.data.value;
+    })
+    .catch((error) => {
+      return error;
+    });
+
+    return response.data.value;
   } catch (err) {
     return err;
   }

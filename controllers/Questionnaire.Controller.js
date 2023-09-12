@@ -1,4 +1,4 @@
-const { getSharePointAccessToken, getFormDigestValue, createFolder, uploadFileToSharePointQuestionnaire } = require("../helpers/sharePoint.helper");
+const { getSharePointAccessToken, getFormDigestValue, createFolder, uploadFileToSharePointQuestionnaire, createAnonymousLink } = require("../services/sharePoint.services");
 
 const { uploadFileToS3 } = require("../services/aws.s3.services");
 const { run } = require("../services/aws.ses.services");
@@ -49,13 +49,13 @@ exports.processQuestionnaire = async (req, res) => {
         await uploadFileToS3({ fileBuffer, imageKey, mimeType });
         
         const result = await uploadFileToSharePointQuestionnaire(accessToken, formDigestValue, file, folderName);
-
+        
+        console.log(result)
         if(result){
-          const originalUrl = `https://${process.env.SHAREPOINT_DOMAIN}${result.ServerRelativeUrl}`;
-          const encodedUrl = encodeURI(originalUrl);
-
+          const url = await createAnonymousLink(accessToken, result.ServerRelativeUrl);
+          
           documents.push({
-            url: encodedUrl,
+            url: url,
             fileName: result.Name
           });
         }

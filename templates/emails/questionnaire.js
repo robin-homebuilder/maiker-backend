@@ -7,7 +7,7 @@ exports.questionnaire = async ({ files, parsedOwner, parsedProjectOne, parsedMai
       fileData += `<p><a href="${file.url}" target="_blank">${file.fileName}</a></p>`
     }));
   } else{
-    fileData + "No files were included";
+    fileData += "No files were included";
   }
   
   if(parsedOwner.length > 0){
@@ -85,11 +85,13 @@ exports.questionnaire = async ({ files, parsedOwner, parsedProjectOne, parsedMai
         <p>${parsedProjectOne.project_type}</p>
         <p><strong>Do you have plans for your Home Construction project or are you in process of completing plans?</strong></p>
         <p>${parsedProjectOne.complete_plan}</p>
-        <p><strong>Who is your Architect or Home Designer?</strong></p>
-        <ul>
-          <li><strong>Architect Name: </strong>${parsedProjectOne.architect_name}</li>
-          <li><strong>Architect Contact: </strong>${parsedProjectOne.architect_contact}</li>
-        </ul>
+        ${parsedProjectOne.complete_plan == "Yes" ? 
+          `<p><strong>Who is your Architect or Home Designer?</strong></p>
+          <ul>
+            <li><strong>Architect Name: </strong>${parsedProjectOne.architect_name}</li>
+            <li><strong>Architect Contact: </strong>${parsedProjectOne.architect_contact}</li>
+          </ul>`
+        : ""}
         <p><strong>Please select from the following list if you have any of the following:</strong></p>
         ${parsedProjectOne.project_checkbox.length > 0 ? 
           `<ul>
@@ -98,7 +100,7 @@ exports.questionnaire = async ({ files, parsedOwner, parsedProjectOne, parsedMai
             )).join('')}
           </ul>` 
           : "None were selected"}
-        <h3>Files</h3>
+        <p><strong>Files</strong></p>
         ${fileData}
         <hr />
         <h2>5. Project Information - Part 2</h2>
