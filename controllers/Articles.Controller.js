@@ -44,7 +44,7 @@ exports.createArticle = async (req, res) => {
 
 exports.getArticles = async (req, res) => {
   try {
-    const articles = await Article.find({}).select("-_id title sub_title slug image");
+    const articles = await Article.find({}).select("-_id title sub_title slug image").sort({ order: 1});
     
     res.status(200).json(articles);
   } catch (err) {
