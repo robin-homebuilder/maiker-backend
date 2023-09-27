@@ -13,6 +13,7 @@ const ArticleSchema = new mongoose.Schema(
     sub_title: String,
     slug: String,
     author: String,
+    company: String,
     content: String,
     with_sidebar: Boolean,
     image: String,

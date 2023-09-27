@@ -16,6 +16,8 @@ const xeroRoutes = require("./routes/Xero.Route");
 const sharePointRoutes = require("./routes/SharePoint.Route");
 const articlesRoutes = require("./routes/Articles.Route");
 const questionnaireRoutes = require("./routes/Questionnaire.Route");
+const administrationRoutes = require("./routes/Administration.Route");
+
 
 app.use(express.json());
 
@@ -33,6 +35,7 @@ app.use("/xero", xeroRoutes);
 app.use("/sharepoint", sharePointRoutes);
 app.use("/articles", articlesRoutes);
 app.use("/questionnaire", questionnaireRoutes);
+app.use("/administration", administrationRoutes);
 /* END ROUTES */
 
 const port = process.env.PORT || 3000;
