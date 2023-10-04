@@ -19,6 +19,7 @@ const ArticleSchema = new mongoose.Schema(
     image: String,
     order: Number,
     banner: String,
+    issued_date: Date,
     external_links: [ExternalLinksSchema]
   },
   { timestamps: true }
