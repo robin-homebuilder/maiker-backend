@@ -36,3 +36,32 @@ exports.uploadFileToS3 = async (data) => {
         console.log("Error fetching image: ", err)
     }
 }
+
+exports.deleteWholeFolder = async (path) => {
+    const params = {
+        Bucket: bucketName,
+        Prefix: path
+    };
+
+    try {
+        const data = await s3Client.send(new ListObjectsCommand(params));
+        
+        if (data.Contents.length === 0) {
+            return false;
+        } else {
+            const items = data.Contents.map(item => ({ Key: item.Key }));
+            
+            const deleteParams = {
+                Bucket: bucketName,
+                Delete: {
+                    Objects: items
+                }
+            };
+    
+            await s3Client.send(new DeleteObjectsCommand(deleteParams));
+            return true;
+        }
+    } catch (err) {
+        return err;
+    }
+}

@@ -16,7 +16,11 @@ const {
   getConsultants,
   getConsultantByID,
   getSearchConsultants,
-  updateConsultant
+  updateConsultant,
+  createProjectPhoto,
+  getProjectPhotos,
+  updateProjectPhoto,
+  deleteProject
 } = require("../controllers/Administration.Controller");
 
 const router = express.Router();
@@ -57,5 +61,20 @@ router.post("/consultants/search", getSearchConsultants)
 router.post("/consultants", upload.single("insuranceFile"), createConsultant)
 
 router.patch("/consultants/:consultantID", upload.single("insuranceFile"), updateConsultant)
+
+//Project Photo
+router.get("/projectphoto", getProjectPhotos)
+
+router.post("/projectphoto", upload.fields([
+  { name: 'main_image', maxCount: 1 },
+  { name: 'other_image' }
+]), createProjectPhoto);
+
+router.patch("/projectphoto/:projectID", upload.fields([
+  { name: 'main_image', maxCount: 1 },
+  { name: 'other_image' }
+]), updateProjectPhoto);
+
+router.delete("/projectphoto/:projectID", deleteProject);
 
 module.exports = router;

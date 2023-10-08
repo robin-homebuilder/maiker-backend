@@ -2,11 +2,12 @@ const mongoose = require("mongoose");
 
 const slugify = require("slugify");
 
-const { uploadFileToS3 } = require("../services/aws.s3.services");
-
 const { Client, ClientProject } = require("../models/Client.Model");
 const { Article } = require("../models/Articles.Model");
 const { Consultant } = require("../models/Consultant.Model");
+const { Project } = require("../models/Projects.Model");
+
+const { uploadFileToS3, deleteWholeFolder } = require("../services/aws.s3.services");
 
 const { getSharePointAccessToken, getFormDigestValue, createFolder, uploadFileToSharePointInsurances, createAnonymousLink } = require("../services/sharePoint.services");
 
@@ -584,6 +585,146 @@ exports.getSearchConsultants = async (req, res) => {
     const consultants = await Consultant.find({ name: regex });
     
     res.status(200).json(consultants);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
+
+exports.createProjectPhoto = async (req, res) => {
+  const { main_image, other_image } = req.files
+  
+  try {
+    let mainImage = "";
+    let image_base_url = "";
+
+    const otherImage = [];
+
+    let projectNumber;
+
+    const lastProject = await Project.findOne({}, {}, { sort: { 'createdAt': -1 } });
+    
+    if(lastProject){
+      projectNumber = parseInt(lastProject.title.split(" ")[1]) + 1;
+    } else{
+      projectNumber = 0;
+    }
+
+    image_base_url = `projects/project-${projectNumber}`;
+
+    if(main_image){
+      const fileData = main_image[0];
+      
+      const fileName = fileData.originalname;
+      const fileBuffer = fileData.buffer;
+      const mimeType = fileData.mimetype;
+      const imageKey = `${image_base_url}/${fileName}`;
+
+      await uploadFileToS3({ fileBuffer, imageKey, mimeType });
+
+      mainImage = fileName;
+    }
+
+    if(other_image){
+      await Promise.all(other_image.map(async (file) => {
+        const fileName = file.originalname;
+        const fileBuffer = file.buffer;
+        const mimeType = file.mimetype;
+        const imageKey = `${image_base_url}/${fileName}`;
+
+        await uploadFileToS3({ fileBuffer, imageKey, mimeType });
+
+        otherImage.push(fileName);
+      }));
+    }
+
+    const newProjectPhoto = new Project({
+      title: `Project ${projectNumber}`,
+      image_base_url: `/${image_base_url}`,
+      main_image: mainImage,
+      other_image: otherImage
+    })
+
+    await newProjectPhoto.save();
+
+    res.status(200).json(1);
+  } catch (err) {
+    console.log(err.message)
+    res.status(500).json({ message: err.message });
+  }
+}
+
+exports.getProjectPhotos = async (req, res) => {
+  try {
+    const projects = await Project.find({});
+    
+    res.status(200).json(projects);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
+
+exports.updateProjectPhoto = async (req, res) => {
+  const projectID = req.params.projectID;
+  const { main_image, other_image } = req.files;
+  const { otherImageList } = req.body;
+  const parsedImageList = JSON.parse(otherImageList);
+
+  try {
+    const projectData = await Project.findOne({ _id: projectID });
+
+    const formattedString = projectData.title.toLowerCase().replace(/\s+/g, '-');
+
+    const updateData = {
+      other_image: parsedImageList
+    }
+
+    if(main_image){
+      const fileData = main_image[0];
+      
+      const fileName = fileData.originalname;
+      const fileBuffer = fileData.buffer;
+      const mimeType = fileData.mimetype;
+      const imageKey = `projects/${formattedString}/${fileName}`;
+
+      await uploadFileToS3({ fileBuffer, imageKey, mimeType });
+
+      updateData.main_image = fileName;
+    }
+
+    if(other_image){
+      await Promise.all(other_image.map(async (file) => {
+        
+        const fileName = file.originalname;
+        const fileBuffer = file.buffer;
+        const mimeType = file.mimetype;
+        const imageKey = `projects/${formattedString}/${fileName}`;
+
+        await uploadFileToS3({ fileBuffer, imageKey, mimeType });
+      }));
+    }
+
+    await Project.updateOne({ _id: projectID }, updateData);
+
+    res.status(200).json(1);
+  } catch (err) {
+    console.log(err.message)
+    res.status(500).json({ message: err.message });
+  }
+}
+
+exports.deleteProject = async (req, res) => {
+  const projectID = req.params.projectID;
+  
+  try {
+    const projectData = await Project.findOne({ _id: projectID });
+
+    const formattedString = projectData.title.toLowerCase().replace(/\s+/g, '-');
+
+    await deleteWholeFolder(`projects/${formattedString}`);
+
+    await Project.findOneAndDelete({ _id: projectID });
+
+    res.status(200).json(1);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
