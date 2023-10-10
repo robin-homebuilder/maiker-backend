@@ -17,6 +17,7 @@ const sharePointRoutes = require("./routes/SharePoint.Route");
 const articlesRoutes = require("./routes/Articles.Route");
 const questionnaireRoutes = require("./routes/Questionnaire.Route");
 const administrationRoutes = require("./routes/Administration.Route");
+const authenticationRoutes = require("./routes/Authentication.Route");
 
 
 app.use(express.json());
@@ -36,6 +37,7 @@ app.use("/sharepoint", sharePointRoutes);
 app.use("/articles", articlesRoutes);
 app.use("/questionnaire", questionnaireRoutes);
 app.use("/administration", administrationRoutes);
+app.use("/authentication", authenticationRoutes);
 /* END ROUTES */
 
 const port = process.env.PORT || 3000;

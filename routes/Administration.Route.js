@@ -10,6 +10,7 @@ const {
   createClient,
   getClients,
   getClientByID,
+  getClientCredentialByID,
   getSearchClients,
   updateClient,
   createConsultant,
@@ -20,7 +21,10 @@ const {
   createProjectPhoto,
   getProjectPhotos,
   updateProjectPhoto,
-  deleteProject
+  deleteProject,
+  saveClientCredentials,
+  getConsultantCredentialByID,
+  saveConsultantCredentials
 } = require("../controllers/Administration.Controller");
 
 const router = express.Router();
@@ -47,18 +51,23 @@ router.delete("/articles/:articleID", deleteArticle);
 
 //Clients
 router.get("/clients", getClients)
-router.get("/clients/:clientID", getClientByID)
-router.post("/clients/search", getSearchClients)
+router.get("/clients/:clientID", getClientByID);
+router.get("/clients/credential/:clientID", getClientCredentialByID)
+
 router.post("/clients", createClient)
+router.post("/clients/search", getSearchClients)
+router.post("/clients/credential", saveClientCredentials)
 
 router.patch("/clients/:clientID", updateClient)
 
 //Consultants
 router.get("/consultants", getConsultants)
 router.get("/consultants/:consultantID", getConsultantByID)
+router.get("/consultants/credential/:consultantID", getConsultantCredentialByID)
 
 router.post("/consultants/search", getSearchConsultants)
 router.post("/consultants", upload.single("insuranceFile"), createConsultant)
+router.post("/consultants/credential", saveConsultantCredentials)
 
 router.patch("/consultants/:consultantID", upload.single("insuranceFile"), updateConsultant)
 

@@ -6,10 +6,13 @@ const { Client, ClientProject } = require("../models/Client.Model");
 const { Article } = require("../models/Articles.Model");
 const { Consultant } = require("../models/Consultant.Model");
 const { Project } = require("../models/Projects.Model");
+const { User } = require("../models/Users.Model");
 
 const { uploadFileToS3, deleteWholeFolder } = require("../services/aws.s3.services");
 
 const { getSharePointAccessToken, getFormDigestValue, createFolder, uploadFileToSharePointInsurances, createAnonymousLink } = require("../services/sharePoint.services");
+
+const { ROLES_LIST } = require("../config/roles_list");
 
 exports.createArticle = async (req, res) => {
   const { imageFile, bannerFile } = req.files;
@@ -271,6 +274,65 @@ exports.getClientByID = async (req, res) => {
     
     res.status(200).json(client[0]);
   } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
+
+exports.getClientCredentialByID = async (req, res) => {
+  const clientID = req.params.clientID;
+  
+  try {
+    const data = {
+      id: clientID
+    }
+    
+    const user = await User.findOne({ account_id: clientID, type: "client" })
+    
+    if(user){
+      data.email = user.user_email;
+      data.password = user.user_pass
+    } else{
+      const client = await Client.findOne({ _id: clientID })
+
+      if(client){
+        data.email = client.email;
+        data.password = ""
+      } else{
+        data.email = "";
+        data.password = ""
+      }
+    }
+    
+    res.status(200).json(data);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
+
+exports.saveClientCredentials = async (req, res) => {
+  const { id, email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ account_id: id, type: "client" });
+
+    if(user){
+      await User.updateOne({ _id: user._id, type: "client" }, { user_pass: password });
+    } else{
+      const newUser = new User({
+        type: "client",
+        account_id: id,
+        user_email: email,
+        user_pass: password,
+        user_role: ROLES_LIST.Client,
+        status: 1
+      });
+
+      await newUser.save();
+    }
+
+    res.status(200).json(1);
+  } catch (err) {
+    console.log(err.message)
     res.status(500).json({ message: err.message });
   }
 }
@@ -572,6 +634,65 @@ exports.getConsultantByID = async (req, res) => {
     
     res.status(200).json(consultant);
   } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
+
+exports.getConsultantCredentialByID = async (req, res) => {
+  const consultantID = req.params.consultantID;
+  
+  try {
+    const data = {
+      id: consultantID
+    }
+    
+    const user = await User.findOne({ account_id: consultantID, type: "consultant" })
+    
+    if(user){
+      data.email = user.user_email;
+      data.password = user.user_pass
+    } else{
+      const consultant = await Consultant.findOne({ _id: consultantID })
+
+      if(consultant){
+        data.email = consultant.email;
+        data.password = ""
+      } else{
+        data.email = ""
+        data.password = ""
+      }
+    }
+    
+    res.status(200).json(data);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
+
+exports.saveConsultantCredentials = async (req, res) => {
+  const { id, email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ account_id: id, type: "consultant" });
+
+    if(user){
+      await User.updateOne({ _id: user._id, type: "consultant" }, { user_pass: password });
+    } else{
+      const newUser = new User({
+        type: "consultant",
+        account_id: id,
+        user_email: email,
+        user_pass: password,
+        user_role: ROLES_LIST.Consultant,
+        status: 1
+      });
+
+      await newUser.save();
+    }
+
+    res.status(200).json(1);
+  } catch (err) {
+    console.log(err.message)
     res.status(500).json({ message: err.message });
   }
 }
