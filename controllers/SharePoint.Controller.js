@@ -1,4 +1,4 @@
-const { getSharePointAccessToken, getFormDigestValue, uploadFileToSharePoint } = require("../services/sharePoint.services");
+const { getSharePointAccessToken, getFormDigestValue, uploadFileToSharePoint, createAnonymousLink, createShareableLink } = require("../services/sharePoint.services");
 
 exports.getAccessToken = async (req, res) => {
   try {
@@ -24,7 +24,7 @@ exports.getFormDigestValue = async (req, res) => {
 exports.fileUploadToSharePoint = async (req, res) => {
   const files = req.files;
   const test = files[0];
-  console.log(test)
+  
   try {
     const accessTokenData = await getSharePointAccessToken();
     const accessToken = accessTokenData.access_token;
@@ -36,6 +36,22 @@ exports.fileUploadToSharePoint = async (req, res) => {
     const data = await uploadFileToSharePoint(accessToken, formDigestValue, test);
     
     res.status(200).json(data);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
+
+exports.createAnonymousLink = async (req, res) => {
+  const { path } = req.body;
+  
+  try {
+    const accessTokenData = await getSharePointAccessToken();
+    const accessToken = accessTokenData.access_token;
+    
+    const url = await createAnonymousLink(accessToken, path);
+    // const url = await createShareableLink(accessToken, path);
+    
+    res.status(200).json(url);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

@@ -13,6 +13,7 @@ const {
   getClientCredentialByID,
   getSearchClients,
   updateClient,
+  updateClientProjectStatus,
   createConsultant,
   getConsultants,
   getConsultantByID,
@@ -59,6 +60,7 @@ router.post("/clients/search", getSearchClients)
 router.post("/clients/credential", saveClientCredentials)
 
 router.patch("/clients/:clientID", updateClient)
+router.patch("/clients/project_status/:clientID", updateClientProjectStatus)
 
 //Consultants
 router.get("/consultants", getConsultants)

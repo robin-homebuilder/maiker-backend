@@ -229,7 +229,7 @@ exports.getClients = async (req, res) => {
         }
       }
     ]);
-
+    
     res.status(200).json(clients);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -240,6 +240,7 @@ exports.getClientByID = async (req, res) => {
   const clientID = req.params.clientID;
   
   try {
+    let result = {};
     // const clients = await Client.findOne({ _id: clientID}).select("type first_name last_name company_name trustee_name phone email").populate("project_id", "-_id site_address");
     const client = await Client.aggregate([ 
       {
@@ -267,12 +268,17 @@ exports.getClientByID = async (req, res) => {
           email: 1,
           abn: 1,
           trust_name: 1,
-          site_address: '$projectData.site_address'
+          site_address: '$projectData.site_address',
+          project_status: 1
         }
       }
     ]);
+
+    if(client[0]){
+      result = client[0]
+    }
     
-    res.status(200).json(client[0]);
+    res.status(200).json(result);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -425,10 +431,38 @@ exports.createClient = async (req, res) => {
       trustee_name,
       trust_name,
       abn,
-      project_id: projectData._id
+      project_id: projectData._id,
+      project_number: project_id,
+      project_status: 301
     });
 
     await newClient.save();
+
+    const accessTokenData = await getSharePointAccessToken();
+    const accessToken = accessTokenData.access_token;
+
+    const digestValueData = await getFormDigestValue(accessToken);
+    const formDigestString = digestValueData.FormDigestValue;
+    const formDigestValue = formDigestString.split(',')[0];
+
+    await createFolder(accessToken, formDigestValue, project_id);
+    await createFolder(accessToken, formDigestValue, `${project_id}/01. Client Information`);
+    await createFolder(accessToken, formDigestValue, `${project_id}/01. Client Information/Client Documents`);
+    await createFolder(accessToken, formDigestValue, `${project_id}/02. Site Information`);
+    await createFolder(accessToken, formDigestValue, `${project_id}/02. Site Information/Site Information Documents`);
+    await createFolder(accessToken, formDigestValue, `${project_id}/03. Drawing and Reports`);
+    await createFolder(accessToken, formDigestValue, `${project_id}/04. Authority and Approvals`);
+    await createFolder(accessToken, formDigestValue, `${project_id}/05. Contact Administration`);
+    await createFolder(accessToken, formDigestValue, `${project_id}/05. Contact Administration/01. Contract Documents`);
+    await createFolder(accessToken, formDigestValue, `${project_id}/05. Contact Administration/02. Extension of Time`);
+    await createFolder(accessToken, formDigestValue, `${project_id}/05. Contact Administration/03. Variations`);
+    await createFolder(accessToken, formDigestValue, `${project_id}/06. Progress Claims, Invoices & Receipts`);
+    await createFolder(accessToken, formDigestValue, `${project_id}/06. Progress Claims, Invoices & Receipts/01. Progress Claims`);
+    await createFolder(accessToken, formDigestValue, `${project_id}/06. Progress Claims, Invoices & Receipts/02. Invoices`);
+    await createFolder(accessToken, formDigestValue, `${project_id}/06. Progress Claims, Invoices & Receipts/03. Receipts`);
+    await createFolder(accessToken, formDigestValue, `${project_id}/07. Compliance & Operations Manual`);
+    await createFolder(accessToken, formDigestValue, `${project_id}/08. Project Photos`);
+
     
     res.status(200).json(1);
   } catch (err) {
@@ -498,6 +532,24 @@ exports.updateClient = async (req, res) => {
   }
 }
 
+exports.updateClientProjectStatus = async (req, res) => {
+  const clientID = req.params.clientID;
+
+  const { status } = req.body;
+  
+  try {
+    const updateData = {
+      project_status: status
+    }
+
+    await Client.updateOne({ _id: clientID }, updateData);
+    
+    res.status(200).json(1);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
+
 exports.createConsultant = async (req, res) => {
   const file = req.file;
   const { name, licence, insurance, insurance_expiry, email } = req.body;
@@ -511,7 +563,7 @@ exports.createConsultant = async (req, res) => {
     const lastConsultant = await Consultant.findOne({}, {}, { sort: { 'createdAt': -1 } });
     
     if(lastConsultant){
-      consultantNumber = lastConsultant.id_number + 1;
+      consultantNumber = parseInt(lastConsultant.id_number) + 1;
     } else{
       consultantNumber = 10000;
     }

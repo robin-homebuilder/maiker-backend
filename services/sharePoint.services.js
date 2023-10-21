@@ -81,8 +81,48 @@ exports.uploadFileToSharePoint = async (accessToken, digestValue, file, parentFo
   const fileName = `${time}_${file.originalname}`;
   const fileBuffer = file.buffer;
 
+  const encodedFilename = encodeURIComponent(fileName);
+
   try {
-    const apiURL = `https://${sharepointDomain}/${sharepointSite}/_api/web/GetFolderByServerRelativeURL('/sites/MaikerConstructionsProjects/Shared Documents/${parentFolder}/01%2E%20Client%20Information/Client%20Documents')/Files/add(url='${fileName}', overwrite=false)`;
+    const apiURL = `https://${sharepointDomain}/${sharepointSite}/_api/web/GetFolderByServerRelativeURL('/sites/MaikerConstructionsProjects/Shared Documents/${parentFolder}/01%2E%20Client%20Information/Client%20Documents')/Files/add(url='${encodedFilename}', overwrite=false)`;
+    let config = {
+      method: 'post',
+      maxBodyLength: Infinity,
+      url: apiURL,
+      headers: { 
+        'Accept': 'application/json;odata=nometadata',
+        'Authorization': `Bearer ${accessToken}`,
+        'X-RequestDigest': digestValue
+      },
+      data: fileBuffer
+    };
+
+    const response = await axios.request(config)
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      return error;
+    });
+
+    return response;
+  } catch (err) {
+    return err;
+  }
+}
+
+exports.uploadFileToSharePointWithFolder = async (accessToken, digestValue, file, parentFolder) => {
+  const sharepointDomain = process.env.SHAREPOINT_DOMAIN;
+  const sharepointSite = process.env.SHAREPOINT_SITE;
+  
+  const fileName = file.originalname;
+  const fileBuffer = file.buffer;
+
+  const encodedFilename = encodeURIComponent(fileName);
+
+  try {
+    const apiURL = `https://${sharepointDomain}/${sharepointSite}/_api/web/GetFolderByServerRelativeURL('/sites/MaikerConstructionsProjects/Shared Documents/${parentFolder}')/Files/add(url='${encodedFilename}', overwrite=false)`;
+    
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
@@ -116,8 +156,10 @@ exports.uploadFileToSharePointQuestionnaire = async (accessToken, digestValue, f
   const fileName = file.originalname;
   const fileBuffer = file.buffer;
 
+  const encodedFilename = encodeURIComponent(fileName);
+
   try {
-    const apiURL = `https://${sharepointDomain}/${sharepointSite}/_api/web/GetFolderByServerRelativeURL('/sites/MaikerConstructionsProjects/Shared Documents/Questionnaire/${parentFolder}')/Files/add(url='${fileName}', overwrite=true)`;
+    const apiURL = `https://${sharepointDomain}/${sharepointSite}/_api/web/GetFolderByServerRelativeURL('/sites/MaikerConstructionsProjects/Shared Documents/Questionnaire/${parentFolder}')/Files/add(url='${encodedFilename}', overwrite=true)`;
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
@@ -151,8 +193,10 @@ exports.uploadFileToSharePointInsurances = async (accessToken, digestValue, file
   const fileName = file.originalname;
   const fileBuffer = file.buffer;
 
+  const encodedFilename = encodeURIComponent(fileName);
+
   try {
-    const apiURL = `https://${sharepointDomain}/${sharepointSite}/_api/web/GetFolderByServerRelativeURL('/sites/MaikerConstructionsProjects/Shared Documents/Insurances/${parentFolder}')/Files/add(url='${fileName}', overwrite=true)`;
+    const apiURL = `https://${sharepointDomain}/${sharepointSite}/_api/web/GetFolderByServerRelativeURL('/sites/MaikerConstructionsProjects/Shared Documents/Insurances/${parentFolder}')/Files/add(url='${encodedFilename}', overwrite=true)`;
     let config = {
       method: 'post',
       maxBodyLength: Infinity,
@@ -224,6 +268,8 @@ exports.createAnonymousLink = async (accessToken, relativePath) => {
   const sharepointDomain = process.env.SHAREPOINT_DOMAIN;
   const sharepointSite = process.env.SHAREPOINT_SITE;
 
+  const encodedRelativePath = encodeURIComponent(`https://${sharepointDomain}${relativePath}`);
+  
   try {
     const apiURL = `https://${sharepointDomain}/${sharepointSite}/_api/SP.Web.CreateAnonymousLink`;
 
@@ -240,7 +286,7 @@ exports.createAnonymousLink = async (accessToken, relativePath) => {
         'Content-Type': 'application/json;odata=verbose',
         'Authorization': `Bearer ${accessToken}`,
       },
-      data: body
+      data: JSON.stringify(body)
     };
 
     const response = await axios.request(config)
@@ -250,6 +296,105 @@ exports.createAnonymousLink = async (accessToken, relativePath) => {
     .catch((error) => {
       return error;
     });
+
+    return response;
+  } catch (err) {
+    return err;
+  }
+}
+
+exports.deleteSharepointFile = async (accessToken, path) => {
+  const sharepointDomain = process.env.SHAREPOINT_DOMAIN;
+  const sharepointSite = process.env.SHAREPOINT_SITE;
+
+  const relativePath = `/sites/MaikerConstructionsProjects/Shared Documents/${path}`
+  
+  try {
+    const apiURL = `https://${sharepointDomain}/${sharepointSite}/_api/web/GetFileByServerRelativePath(decodedurl='${relativePath}')`;
+
+    const headers = {
+      'Accept': 'application/json;odata=verbose',
+      'Content-Type': 'application/json;odata=verbose',
+      'Authorization': `Bearer ${accessToken}`,
+    };
+
+    const config = {
+      method: 'delete',
+      url: apiURL,
+      headers: headers,
+    };
+
+    const response = await axios.request(config);
+    
+  } catch (error) {
+    return error.message;
+  }
+} 
+
+exports.deleteSharepointFolder = async (accessToken, path) => {
+  const sharepointDomain = process.env.SHAREPOINT_DOMAIN;
+  const sharepointSite = process.env.SHAREPOINT_SITE;
+
+  const relativePath = `/sites/MaikerConstructionsProjects/Shared Documents/${path}`;
+
+  try {
+    const apiURL = `https://${sharepointDomain}/${sharepointSite}/_api/web/GetFolderByServerRelativePath(decodedurl='${relativePath}')`;
+
+    const headers = {
+      'Accept': 'application/json;odata=verbose',
+      'Content-Type': 'application/json;odata=verbose',
+      'Authorization': `Bearer ${accessToken}`,
+    };
+
+    const config = {
+      method: 'delete',
+      url: apiURL,
+      headers: headers,
+    };
+
+    const response = await axios.request(config);
+  } catch (error) {
+    return error.message;
+  }
+}
+
+exports.createShareableLink = async (accessToken, relativePath) => {
+  const sharepointDomain = process.env.SHAREPOINT_DOMAIN;
+  const sharepointSite = process.env.SHAREPOINT_SITE;
+
+  try {
+    const apiURL = `https://${sharepointDomain}/${sharepointSite}/_api/SP.Sharing.DocumentLibrarySharingManager/GetFileByServerRelativePath(decodedUrl='${relativePath}')/ShareLink`;
+    console.log(apiURL)
+    const body = {
+      "request": {
+        "createLink": true,
+        "settings": {
+          "expiration": "never",
+          "role": 2 // View
+        }
+      }
+    };
+
+    let config = {
+      method: 'post',
+      maxBodyLength: Infinity,
+      url: apiURL,
+      headers: {
+        'Accept': 'application/json;odata=verbose',
+        'Content-Type': 'application/json;odata=verbose',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      data: body,
+    };
+
+    const response = await axios.request(config)
+      .then((response) => {
+        return response.data.d.CreateLink;
+      })
+      .catch((error) => {
+        console.log(error);
+        return error;
+      });
 
     return response;
   } catch (err) {
