@@ -338,11 +338,12 @@ exports.getSiteInformation = async (req, res) => {
         site_area: site_information[0]?.site_area || "",
         local_government: site_information[0]?.local_government || ""
       },
-      siteDocuments: siteDocuments.documents
+      siteDocuments: siteDocuments?.documents ?? []
     }
-
+    
     res.status(200).json(result);
   } catch (err) {
+    console.log(err.message)
     res.status(500).json({ message: err.message });
   }
 }
@@ -775,6 +776,7 @@ exports.addDrawingsAndReportsFile = async (req, res) => {
 
     res.status(200).json(1);
   } catch (err) {
+    console.log(err.message)
     res.status(500).json({ message: err.message });
   }
 }

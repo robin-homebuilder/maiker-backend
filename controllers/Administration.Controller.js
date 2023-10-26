@@ -7,6 +7,8 @@ const { Article } = require("../models/Articles.Model");
 const { Consultant } = require("../models/Consultant.Model");
 const { Project } = require("../models/Projects.Model");
 const { User } = require("../models/Users.Model");
+const { ContractSum } = require("../models/ContractSum.Model");
+const { PracticalCompletion } = require("../models/PracticalCompletion.Model");
 
 const { uploadFileToS3, deleteWholeFolder } = require("../services/aws.s3.services");
 
@@ -436,7 +438,7 @@ exports.createClient = async (req, res) => {
       project_status: 301
     });
 
-    await newClient.save();
+    const clientData = await newClient.save();
 
     const accessTokenData = await getSharePointAccessToken();
     const accessToken = accessTokenData.access_token;
@@ -463,7 +465,28 @@ exports.createClient = async (req, res) => {
     await createFolder(accessToken, formDigestValue, `${project_id}/07. Compliance & Operations Manual`);
     await createFolder(accessToken, formDigestValue, `${project_id}/08. Project Photos`);
 
-    
+    //Create Contract Sum
+    const contractSum = new ContractSum({
+      client_id: clientData._id,
+      original_contract_sum: null,
+      variation: null,
+      revised_contract_sum: null
+    });
+
+    await contractSum.save();
+    //End Contract Sum
+
+    //Create Practical Completion
+    const practicalCompletion = new PracticalCompletion({
+      client_id: clientData._id,
+      original_practical_completion: null,
+      approved_extension_of_time: null,
+      revised_practical_completion: null
+    });
+
+    await practicalCompletion.save();
+    //End Practical Completion
+
     res.status(200).json(1);
   } catch (err) {
     res.status(500).json({ message: err.message });

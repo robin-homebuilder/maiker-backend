@@ -7,6 +7,7 @@ const { uploadFileToS3 } = require("../services/aws.s3.services");
 const { createLeadInZoho } = require("../services/zoho.services");
 
 const { getSharePointAccessToken, getFormDigestValue, createFolder, uploadFileToSharePoint, createAnonymousLink } = require("../services/sharePoint.services");
+
 exports.createNewClient = async (req, res) => {
   const uploadedFiles = req.files;
   const { site_address, owners } = req.body;
