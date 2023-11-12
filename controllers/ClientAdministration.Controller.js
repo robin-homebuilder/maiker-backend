@@ -297,7 +297,7 @@ exports.deleteClientDocument = async (req, res) => {
 }
 
 exports.getSiteInformation = async (req, res) => {
-  const clientID = req.params.clientID
+  const clientID = req.params.clientID;
 
   try {
     const site_information = await Client.aggregate([
@@ -330,7 +330,7 @@ exports.getSiteInformation = async (req, res) => {
     
     const result = {
       siteInformationID: {
-        id: site_information[0].projectID.toString()
+        id: site_information[0]?.projectID.toString() || ""
       },
       siteDetails: {
         site_address: site_information[0]?.site_address  || "",

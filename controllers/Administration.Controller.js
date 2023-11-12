@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const slugify = require("slugify");
 
-const { Client, ClientProject } = require("../models/Client.Model");
+const { Client, ClientProject, ClientConsultant } = require("../models/Client.Model");
 const { Article } = require("../models/Articles.Model");
 const { Consultant } = require("../models/Consultant.Model");
 const { Project } = require("../models/Projects.Model");
@@ -271,13 +271,21 @@ exports.getClientByID = async (req, res) => {
           abn: 1,
           trust_name: 1,
           site_address: '$projectData.site_address',
-          project_status: 1
+          project_status: 1,
+          project_no: '$projectData.project_no'
         }
       }
     ]);
 
     if(client[0]){
-      result = client[0]
+      result = client[0];
+
+      const consultant = await ClientConsultant.findOne({ client_id: clientID }).populate("consultant_id");
+
+      if(consultant){
+        result.consultant = consultant.consultant_id?.name || "";
+      }
+      
     }
     
     res.status(200).json(result);
