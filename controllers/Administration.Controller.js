@@ -321,6 +321,7 @@ exports.getClientCredentialByID = async (req, res) => {
     
     res.status(200).json(data);
   } catch (err) {
+    console.log(err.message)
     res.status(500).json({ message: err.message });
   }
 }

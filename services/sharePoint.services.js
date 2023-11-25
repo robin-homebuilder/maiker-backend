@@ -364,7 +364,7 @@ exports.createShareableLink = async (accessToken, relativePath) => {
 
   try {
     const apiURL = `https://${sharepointDomain}/${sharepointSite}/_api/SP.Sharing.DocumentLibrarySharingManager/GetFileByServerRelativePath(decodedUrl='${relativePath}')/ShareLink`;
-    console.log(apiURL)
+    
     const body = {
       "request": {
         "createLink": true,
@@ -392,7 +392,6 @@ exports.createShareableLink = async (accessToken, relativePath) => {
         return response.data.d.CreateLink;
       })
       .catch((error) => {
-        console.log(error);
         return error;
       });
 
